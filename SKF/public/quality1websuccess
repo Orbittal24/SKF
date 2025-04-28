@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Navbar and Table</title>
+    <link rel="stylesheet" href="/css/index.css">
+    <!-- <script src="cordova.js"></script> -->
+    <!-- <script src="app.js"></script> -->
+
+
+</head>
+<body>
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="logo">
+            <img src="/images/png-transparent-skf-hd-logo1.png" alt="SKF Logo">
+        </div>
+        <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+        <div class="menu">
+
+         
+          <a href="#" class="back-button" onclick="history.back()">
+            <i class="fas fa-arrow-left"></i> Back
+          </a>
+          <a href="#" class="refresh-button" onclick="location.reload()">
+            <i class="fas fa-sync-alt"></i>
+        </a>
+            <a href="weighing.html">Weighing</a>
+            <a href="reinspection.html">Reinspection</a>
+            <a href="report.html">Reports</a>
+            <a href="login.html">Logout</a>
+        </div>
+        <div class="navbar-toggle" onclick="toggleMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+
+    <!-- Content Section -->
+    <div class="content">
+        <h1>Quality</h1>
+
+        <!-- Table Section -->
+        <div class="table-container">
+            <table id="reinspectionTable">
+                <thead>
+                  <tr>
+                    <th>Part No</th>
+                    <th>MO</th>
+                    <th>Box No</th>
+                    <th>Status</th>
+                    <th>Elapsed Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Rows will be dynamically inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal for OK and Not OK Selection -->
+    <div class="overlay" id="overlay"></div>
+    <div class="modal" id="qcModal">
+        <p>Mark as OK or Not OK?</p>
+        <button id="okButton">OK</button>
+        <button id="notOkButton">Not OK</button>
+    </div>
+
+    <!-- Camera Interface Modal -->
+    <div class="modal" id="cameraModal">
+        <h2>Capture Image</h2>
+        <div class="camera-container">
+            <button id="captureButton">Capture Image</button>
+            <div class="camera-preview">
+                <h3>Preview</h3>
+                <img id="previewImage" src="" alt="Captured Image">
+            </div>
+            <label for="remarkDropdown">Select Remark:</label>
+            <select id="remarkDropdown">
+                <option value="">--Select Remark--</option>
+                <option value="Damaged">Damaged</option>
+                <option value="Incomplete">Incomplete</option>
+                <option value="Scratched">Scratched</option>
+                <option value="Good Condition">Good Condition</option>
+            </select>
+        </div>
+        <button id="submitButton">Submit</button>
+    </div>
+<script>
+    document.addEventListener("DOMContentLoaded", fetchData);
+
+const overlay = document.getElementById("overlay");
+const qcModal = document.getElementById("qcModal");
+const cameraModal = document.getElementById("cameraModal");
+const previewImage = document.getElementById("previewImage");
+let videoElement = null;
+
+let currentRow = null;
+let imageBlob = null;
+let currentStatus = null;
+let qcData = [];
+
+function toggleMenu() {
+  const menu = document.querySelector('.navbar .menu');
+  menu.classList.toggle('show');
+}
+
+// Fetch QC data and populate table
+async function fetchData() {
+  try {
+    const response = await fetch("/api/qc/data");
+    if (!response.ok) throw new Error(`Error fetching QC data: ${response.status}`);
+    const data = await response.json();
+    populateTable(data);
+  } catch (error) {
+    console.error(error);
+    const qcTableBody = document.getElementById("reinspectionTable").querySelector("tbody");
+    qcTableBody.innerHTML = `<tr><td colspan="5">Failed to load data. Please try again later.</td></tr>`;
+  }
+}
+
+function populateTable(data) {
+  qcData = data;
+  const qcTableBody = document.getElementById("reinspectionTable").querySelector("tbody");
+  qcTableBody.innerHTML = "";
+  if (!data || data.length === 0) {
+    qcTableBody.innerHTML = `<tr><td colspan="5">No data available</td></tr>`;
+    return;
+  }
+  data.forEach((row, index) => {
+    const tr = document.createElement("tr");
+    tr.setAttribute("data-index", index);
+    tr.innerHTML = `
+      <td>${row.part_no || "N/A"}</td>
+      <td>${row.mo || "N/A"}</td>
+      <td>${row.box_no || "N/A"}</td>
+      <td>
+        <button onclick="openModal(${index})" class="status-button">
+          ${row.status || "Pending"}
+        </button>
+      </td>
+      <td>${row.elapsed_time || "N/A"}</td>
+    `;
+    qcTableBody.appendChild(tr);
+  });
+}
+
+function openModal(index) {
+  currentRow = index;
+  overlay.classList.add("open");
+  qcModal.classList.add("open");
+}
+
+function closeModal() {
+  overlay.classList.remove("open");
+  qcModal.classList.remove("open");
+  cameraModal.classList.remove("open");
+  if (videoElement) {
+    const tracks = videoElement.srcObject?.getTracks();
+    if (tracks) tracks.forEach((track) => track.stop());
+    videoElement.srcObject = null;
+  }
+}
+
+function openCamera() {
+  qcModal.classList.remove("open");
+  cameraModal.classList.add("open");
+
+  if (!videoElement) {
+    videoElement = document.createElement("video");
+    videoElement.setAttribute("id", "video");
+    videoElement.setAttribute("autoplay", true);
+    videoElement.setAttribute("playsinline", true);
+    const cameraContainer = document.querySelector(".camera-container");
+    cameraContainer.insertBefore(videoElement, cameraContainer.firstChild);
+  }
+
+  navigator.mediaDevices
+    .getUserMedia({ video: { facingMode: "environment" } })
+    .then((stream) => {
+      videoElement.srcObject = stream;
+    })
+    .catch((err) => {
+      console.error("Error accessing the camera:", err);
+      alert("Unable to access the camera. Please check permissions.");
+    });
+}
+
+document.getElementById("captureButton").addEventListener("click", () => {
+  if (!videoElement) {
+    alert("Camera not initialized properly!");
+    return;
+  }
+
+  const canvas = document.createElement("canvas");
+  canvas.width = videoElement.videoWidth;
+  canvas.height = videoElement.videoHeight;
+  const context = canvas.getContext("2d");
+  context.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+  const imageDataURL = canvas.toDataURL("image/png");
+  previewImage.src = imageDataURL;
+  imageBlob = dataURItoBlob(imageDataURL);
+  console.log("Captured Image Blob:", imageBlob);
+});
+
+document.getElementById("submitButton").addEventListener("click", async () => {
+  if (!imageBlob) {
+    alert("Please capture an image before submitting!");
+    return;
+  }
+
+  const remark = document.getElementById("remarkDropdown").value;
+  if (!remark) {
+    alert("Please select a remark before submitting!");
+    return;
+  }
+
+  const rowData = qcData[currentRow];
+  if (!rowData || !rowData.part_no || !rowData.mo || !rowData.box_no) {
+    alert("Incomplete data for the selected row.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("image", imageBlob, "captured_image.png");
+  formData.append("part_no", rowData.part_no);
+  formData.append("mo", rowData.mo);
+  formData.append("box_no", rowData.box_no);
+  formData.append("status", currentStatus);
+  formData.append("remark", remark);
+
+  try {
+    const response = await fetch("/api/qc/update", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (response.ok) {
+      alert("Quality check updated successfully!");
+      closeModal();
+      fetchData();
+    } else {
+      const error = await response.json();
+      alert(`Failed to update quality check: ${error.error}`);
+    }
+  } catch (err) {
+    console.error("Error during submission:", err);
+    alert("An error occurred. Please try again.");
+  }
+});
+
+document.getElementById("okButton").addEventListener("click", () => {
+  currentStatus = "OK";
+  openCamera();
+});
+
+document.getElementById("notOkButton").addEventListener("click", () => {
+  currentStatus = "Not OK";
+  openCamera();
+});
+
+function dataURItoBlob(dataURI) {
+  const byteString = atob(dataURI.split(",")[1]);
+  const mimeString = dataURI.split(",")[0].split(":")[1].split(";")[0];
+  const ab = new ArrayBuffer(byteString.length);
+  const ia = new Uint8Array(ab);
+  for (let i = 0; i < byteString.length; i++) {
+    ia[i] = byteString.charCodeAt(i);
+  }
+  return new Blob([ab], { type: mimeString });
+}
+
+</script>
+  
+</body>
+</html>

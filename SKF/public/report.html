@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="/css/index.css">
+  
+  <title>SKF-Themed Navigation with Sidebar</title>
+ 
+  <style>
+    /* Reset styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+  
+    /* Body styling */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      color: #333;
+    }
+
+  
+    /* Sidebar */
+    .sidebar {
+      position: fixed;
+      left: -250px;
+      top: 0;
+      width: 250px;
+      height: 100vh;
+      background-color: #003f7d; /* Darker SKF Blue */
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      padding: 5rem 0 1rem;
+      transition: left 0.3s ease;
+      z-index: 999;
+    }
+  
+    .sidebar.active {
+      left: 0;
+    }
+  
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+    }
+  
+    .sidebar ul li {
+      margin: 1.5rem 0;
+      text-align: center;
+    }
+  
+    .sidebar ul li a {
+      color: white;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      display: block;
+      transition: background-color 0.3s ease;
+    }
+  
+    .sidebar ul li a:hover {
+      background-color: #0055A5;
+    }
+  
+    /* Sidebar Toggle Button */
+    .toggle-sidebar {
+      background-color: #0055A5;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-left: 1rem;
+    }
+  
+    .toggle-sidebar:hover {
+      background-color: #004580;
+    }
+  
+   
+  </style>
+  
+  
+<style>
+  /* General table styling */
+  .table-container {
+    padding: 1rem;
+  display: none; /* Hide all tables by default */
+
+  }
+
+
+.table-container.active {
+  display: block; /* Show only the active table */
+}
+
+  .table-responsive {
+    overflow-x: auto; /* Enable horizontal scrolling */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  }
+
+  table {
+    width: 100%; /* Stretch to fill available space */
+    border-collapse: collapse;
+    margin: 1rem 0;
+  }
+
+  table th,
+  table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    white-space: nowrap; /* Prevent columns from wrapping */
+  }
+
+  table th {
+    background-color:  #4F46E5; /* SKF Blue for headers */
+    color: white;
+  }
+
+  table tr:nth-child(even) {
+    background-color: #f9f9f9; /* Light gray for alternate rows */
+  }
+
+  table tr:hover {
+    background-color: #f1f1f1; /* Slight highlight on hover */
+  }
+
+  /* Optional: Adjust column widths */
+  table th,
+  table td {
+    min-width: 120px; /* Minimum width for columns */
+  }
+
+  /* Ensure responsiveness for smaller screens */
+  @media screen and (max-width: 768px) {
+    table th,
+    table td {
+      font-size: 14px; /* Reduce font size for smaller screens */
+    }
+
+    .table-responsive {
+      overflow-x: auto; /* Horizontal scrolling */
+    }
+  }
+  
+</style>
+
+
+</head>
+<body>
+
+  <header>
+    <div class="navbar">
+      <div class="logo">
+          <img src="/images/png-transparent-skf-hd-logo1.png" alt="SKF Logo">
+        <button class="toggle-sidebar" id="toggle-sidebar">☰</button>
+
+      </div>
+      <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+      <div class="menu">
+
+       
+        <a href="#" class="back-button" onclick="history.back()">
+          <i class="fas fa-arrow-left"></i> Back
+        </a>
+        <a href="#" class="refresh-button" onclick="location.reload()">
+          <i class="fas fa-sync-alt"></i>
+      </a>
+          <a href="weighing.html">Weighing</a>
+          <a href="reinspection.html">Reinspection</a>
+          <a href="report.html">Reports</a>
+          <a href="login.html">Logout</a>
+      </div>
+      <div class="navbar-toggle" onclick="toggleMenu()">
+          <span></span>
+          <span></span>
+          <span></span>
+      </div>
+  </div>
+ 
+  </header>
+  
+  <div class="sidebar" id="sidebar">
+    <ul>
+      <li><a href="javascript:void(0);" onclick="showTable('weighing')">Weighing</a></li>
+      <li><a href="javascript:void(0);" onclick="showTable('qc')">QC</a></li>
+      <li><a href="javascript:void(0);" onclick="showTable('reinspection')">Reinspection</a></li>
+    </ul>
+  </div>
+  
+  
+    
+    <div class="sidebar" id="sidebar">
+      <ul>
+        <li><a href="javascript:void(0);" onclick="showTable('weighing')">Weighing</a></li>
+        <li><a href="javascript:void(0);" onclick="showTable('qc')">QC</a></li>
+        <li><a href="javascript:void(0);" onclick="showTable('reinspection')">Reinspection</a></li>
+      </ul>
+    </div>
+    <div class="date-filter">
+        <label for="start_date">From:</label>
+        <input type="date" id="start_date" name="start_date">
+        <label for="end_date">To:</label>
+        <input type="date" id="end_date" name="end_date">
+        <button onclick="applyFilters()">Apply Filter</button>
+        <!-- Add this button inside the <div class="content"> section -->
+<button id="export-button" class="export-btn">Export Data</button>
+      </div>
+      <div id="weighing" class="table-container active">
+        <h2>Weighing Station</h2>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Sr No</th>
+                <th>Part No</th>
+                <th>Part Description</th>
+                <th>Box No</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Channel</th>
+                <th>Quantity per Box</th>
+                <th>Box Weight</th>
+                <th>MO</th>
+                <th>Operator ID</th>
+                <th>Packing Shift</th>
+                <th>Created At</th>
+                <th>Molding Date</th>
+                <th>Molding Shift</th>
+                <th>Post Curing Date</th>
+                <th>Post Curing Shift</th>
+                <th>Finishing Date</th>
+                <th>Finishing Shift</th>
+                <th>No of Boxes</th>
+                <th>Box Scan Counter</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="weighing-table-body">
+              <!-- Dynamic rows will be inserted here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div id="qc" class="table-container">
+        <h2>QC Station</h2>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Sr No</th>
+                <th>Part No</th>
+                <th>MO</th>
+                <th>Box No</th> <!-- Added -->
+                <th>Status</th>
+                <th>Image Path</th>
+                <th>Remark</th>
+            
+                <th>Updated At</th>
+              </tr>
+            </thead>
+            <tbody id="qc-table-body">
+              <!-- Dynamic rows will be inserted here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      
+      <div id="reinspection" class="table-container">
+        <h2>Reinspection Station</h2>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Sr No</th>
+                <th>Part No</th>
+                <th>MO</th>
+                <th>Checked By</th>
+                <th>Submitted At</th>
+              </tr>
+            </thead>
+            <tbody id="reinspection-table-body">
+              <!-- Dynamic rows will be inserted here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      
+      
+      
+      
+      
+    
+ 
+      <script>
+        const hamburger = document.getElementById("hamburger");
+        const navLinks = document.querySelector(".nav-links");
+      
+        hamburger.addEventListener("click", () => {
+          navLinks.classList.toggle("active"); // Toggle the 'active' class to show/hide nav-links
+        });
+      </script>
+      
+
+      
+  <script>
+    // Sidebar toggle functionality
+    const toggleSidebar = document.getElementById("toggle-sidebar");
+    const sidebar = document.getElementById("sidebar");
+  
+    toggleSidebar.addEventListener("click", () => {
+      sidebar.classList.toggle("active");
+    });
+  
+    // Show the correct table and fetch today's data when a sidebar option is clicked
+    function showTable(stationId) {
+  // Get all tables
+  const tables = document.querySelectorAll(".table-container");
+
+  // Hide all tables
+  tables.forEach((table) => {
+    table.classList.remove("active"); // Remove the active class
+  });
+
+  // Show the selected table
+  const selectedTable = document.getElementById(stationId);
+  if (selectedTable) {
+    selectedTable.classList.add("active"); // Add the active class to the selected table
+    fetchTodayData(stationId); // Fetch data for the selected table
+  }
+
+  // Hide the sidebar on mobile (optional)
+  sidebar.classList.remove("active");
+}
+
+    // Get today's date in YYYY-MM-DD format
+    function getTodayDate() {
+      const today = new Date();
+      return today.toISOString().split("T")[0];
+    }
+  
+    // Set default dates in the date filter fields
+    function setDefaultDates() {
+      const today = getTodayDate();
+      document.getElementById("start_date").value = today; // Set today's date as default
+      document.getElementById("end_date").value = today;
+    }
+  
+    // Fetch today's data
+    function fetchTodayData(tableId) {
+  const today = new Date().toISOString().split("T")[0]; // Get today's date
+  fetch(`/api/fetch-data?tableId=${tableId}&startDate=${today}&endDate=${today}`)
+    .then((response) => {
+      if (!response.ok) throw new Error("Failed to fetch data");
+      return response.json();
+    })
+    .then(({ data }) => {
+      if (tableId === "weighing") renderWeighingTable(data);
+      else if (tableId === "qc") renderQcTable(data);
+      else if (tableId === "reinspection") renderReinspectionTable(data);
+    })
+    .catch((err) => {
+      console.error("Error:", err.message);
+      const tableBody = document.getElementById(`${tableId}-table-body`);
+      tableBody.innerHTML = `<tr><td colspan="13" style="text-align:center;">Error: ${err.message}</td></tr>`;
+    });
+}
+
+    // Apply filters with validation
+    function applyFilters() {
+      const startDate = document.getElementById("start_date").value;
+      const endDate = document.getElementById("end_date").value;
+  
+      if (new Date(startDate) > new Date(endDate)) {
+        alert("The start date cannot be later than the end date.");
+        return;
+      }
+  
+      const activeTable = document.querySelector(".table-container.active");
+      const tableId = activeTable ? activeTable.id : "weighing"; // Default to 'weighing' if no table is active
+      fetch(`/api/fetch-data?tableId=${tableId}&startDate=${startDate}&endDate=${endDate}`)
+        .then((response) => {
+          if (!response.ok) throw new Error("Failed to fetch data");
+          return response.json();
+        })
+        .then(({ data }) => {
+          if (tableId === "weighing") renderWeighingTable(data);
+          else if (tableId === "qc") renderQcTable(data);
+          else if (tableId === "reinspection") renderReinspectionTable(data);
+        })
+        .catch((err) => {
+          console.error("Error:", err.message);
+          const tableBody = document.getElementById(`${tableId}-table-body`);
+          tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center;">Error: ${err.message}</td></tr>`;
+        });
+    }
+    function toggleMenu() {
+  const menu = document.querySelector('.navbar .menu');
+  menu.classList.toggle('show');
+}
+
+    // Helper function to format ISO date strings (e.g., "2024-12-25T00:00:00.000Z") to "YYYY-MM-DD"
+function formatDate(isoDate) {
+  if (!isoDate) return "N/A"; // Handle cases where the date is null or undefined
+  return isoDate.split("T")[0]; // Extract only the date part
+}
+
+// Render Weighing Table
+function renderWeighingTable(data) {
+  const tableBody = document.getElementById("weighing-table-body");
+  if (data.length === 0) {
+    tableBody.innerHTML =
+      '<tr><td colspan="22" style="text-align:center;">No data available for the selected date range</td></tr>';
+    return;
+  }
+
+  tableBody.innerHTML = data
+    .map(
+      (row, index) => `
+      <tr>
+        <td>${index + 1}</td>
+        <td>${row.part_no || ""}</td>
+        <td>${row.part_description || ""}</td>
+        <td>${row.box_no || ""}</td>
+        <td>${formatDate(row.date)}</td>
+        <td>${row.time || "N/A"}</td>
+        <td>${row.channel || "N/A"}</td>
+        <td>${row.quantity_per_box || "N/A"}</td>
+        <td>${row.box_weight || "N/A"}</td>
+        <td>${row.mo || ""}</td>
+        <td>${row.operator_id || ""}</td>
+        <td>${row.packing_shift || ""}</td>
+        <td>${formatDate(row.created_at)}</td>
+        <td>${formatDate(row.molding_date)}</td>
+        <td>${row.molding_shift || ""}</td>
+        <td>${formatDate(row.post_curing_date)}</td>
+        <td>${row.post_curing_shift || ""}</td>
+        <td>${formatDate(row.finishing_date)}</td>
+        <td>${row.finishing_shift || ""}</td>
+        <td>${row.no_of_boxes || "N/A"}</td>
+        <td>${row.box_scan_counter || "N/A"}</td>
+        <td>${row.status || ""}</td>
+      </tr>
+    `
+    )
+    .join("");
+}
+
+
+function renderQcTable(data) {
+  const tableBody = document.getElementById("qc-table-body");
+  
+  if (data.length === 0) {
+    tableBody.innerHTML =
+      '<tr><td colspan="9" style="text-align:center;">No data available for the selected date range</td></tr>';
+    return;
+  }
+
+  tableBody.innerHTML = data
+    .map(
+      (row, index) => `
+      <tr>
+        <td>${index + 1}</td>
+        <td>${row.part_no || ""}</td>
+        <td>${row.mo || ""}</td>
+        <td>${row.box_no || "N/A"}</td>
+        <td>${row.status || ""}</td>
+        <td>${row.image_path || "No Image"}</td>
+        <td>${row.remark || "N/A"}</td>
+       
+        <td>${formatDate(row.updated_at)}</td>
+      </tr>
+    `
+    )
+    .join("");
+}
+
+// Render Reinspection Table
+function renderReinspectionTable(data) {
+  const tableBody = document.getElementById("reinspection-table-body");
+  if (data.length === 0) {
+    tableBody.innerHTML =
+      '<tr><td colspan="5" style="text-align:center;">No data available for the selected date range</td></tr>';
+    return;
+  }
+
+  tableBody.innerHTML = data
+    .map(
+      (row, index) => `
+      <tr>
+        <td>${index + 1}</td>
+        <td>${row.part_no || ""}</td>
+        <td>${row.mo || ""}</td>
+        <td>${row.checked_by || ""}</td>
+        <td>${formatDate(row.submitted_at)}</td>
+      </tr>
+    `
+    )
+    .join("");
+}
+
+
+    // Set default active table and default dates on page load
+    window.onload = () => {
+  setDefaultDates(); // Set default dates
+  showTable("weighing"); // Show the default table (weighing)
+};
+
+  </script>
+  <script>
+  // Add this to your existing JavaScript code
+document.getElementById("export-button").addEventListener("click", async () => {
+  try {
+    const response = await fetch("/api/export-csv", {
+      method: "GET",
+    });
+
+    if (response.ok) {
+      Swal.fire({
+        title: "Export Successful!",
+        text: "CSV files have been exported successfully.",
+        icon: "success",
+        confirmButtonText: "OK",
+      });
+    } else {
+      Swal.fire({
+        title: "Export Failed",
+        text: "Something went wrong while exporting data.",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+    }
+  } catch (error) {
+    console.error("Error exporting data:", error);
+    Swal.fire({
+      title: "Error",
+      text: "Something went wrong. Check console.",
+      icon: "error",
+      confirmButtonText: "OK",
+    });
+  }
+});
+</script>
+</body>
+</html>

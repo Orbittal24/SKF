@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Navbar and Table</title>
+    <link rel="stylesheet" href="/css/index.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="logo">
+            <img src="/images/png-transparent-skf-hd-logo1.png" alt="SKF Logo">
+          </div>
+          <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+        <div class="menu">
+
+          <a href="#" class="back-button" onclick="history.back()">
+            <i class="fas fa-arrow-left"></i> Back
+          </a>
+          <a href="#" class="refresh-button" onclick="location.reload()">
+            <i class="fas fa-sync-alt"></i>
+        </a>
+            <a href="weighing.html">Weighing</a>
+            <a href="reinspection.html">Reinspection</a>
+            <a href="quality.html">Quality</a>
+
+            <a href="report.html">Reports</a>
+            <a href="login.html">Logout</a>
+
+        </div>
+        
+        <div class="navbar-toggle" onclick="toggleMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+
+<!-- Content Section -->
+<div class="content">
+  <h1 class="form-title">Weighing</h1>
+
+  <div class="main-container">
+      <div class="form-section">
+          <label for="scan_qr_input">Scan QR Code</label>
+          <input type="text" class="input-field" id="scan_qr_input" placeholder="Paste QR JSON here">
+      </div>
+
+      <div id="details-section" style="display: none;">
+          <div class="form-section">
+              <h2>Part Details</h2>
+              <div class="form-grid">
+                  <div class="form-group">
+                      <label for="part_no">Part No.</label>
+                      <input type="text" id="part_no" class="input-field" readonly>
+                  </div>
+                  <div class="form-group">
+                      <label for="part_description">Part Description</label>
+                      <input type="text" id="part_description" class="input-field" readonly>
+                  </div>
+                  <div class="form-group">
+                      <label for="box_no">Box No.</label>
+                      <input type="text" id="box_no" class="input-field" readonly>
+                  </div>
+                  <div class="form-group">
+                      <label for="date">Date</label>
+                      <input type="text" id="date" class="input-field" readonly>
+                  </div>
+                  <div class="form-group">
+                      <label for="time">Time</label>
+                      <input type="text" id="time" class="input-field" readonly>
+                  </div>
+                  <div class="form-group">
+                      <label for="channel">Channel</label>
+                      <input type="text" id="channel" class="input-field" readonly>
+                  </div>
+                  <div class="form-group">
+                      <label for="quantity_per_box">Quantity per Box</label>
+                      <input type="text" id="quantity_per_box" class="input-field" readonly>
+                  </div>
+                  <div class="form-group">
+                      <label for="box_weight">Box Weight</label>
+                      <input type="text" id="box_weight" class="input-field" readonly>
+                  </div>
+              </div>
+          </div>
+
+          <div class="form-section">
+              <h2>Additional Details</h2>
+              <div class="form-grid">
+                  <div class="form-group">
+                      <label for="molding_date">Molding Date</label>
+                      <input type="date" id="molding_date" class="input-field">
+                  </div>
+                  <div class="form-group">
+                      <label for="molding_shift">Molding Shift</label>
+                      <input type="text" id="molding_shift" class="input-field">
+                  </div>
+                  <div class="form-group">
+                      <label for="post_curing_date">Post Curing Date</label>
+                      <input type="date" id="post_curing_date" class="input-field">
+                  </div>
+                  <div class="form-group">
+                      <label for="post_curing_shift">Post Curing Shift</label>
+                      <input type="text" id="post_curing_shift" class="input-field">
+                  </div>
+                  <div class="form-group">
+                      <label for="finishing_date">Finishing Date</label>
+                      <input type="date" id="finishing_date" class="input-field">
+                  </div>
+                  <div class="form-group">
+                      <label for="finishing_shift">Finishing Shift</label>
+                      <input type="text" id="finishing_shift" class="input-field">
+                  </div>
+                  <div class="form-group">
+                      <label for="no_of_boxes">No. of Boxes</label>
+                      <input type="number" id="no_of_boxes" class="input-field">
+                  </div>
+                  <div class="form-group">
+                      <label for="box_scan_counter">Box Scan Counter</label>
+                      <input type="number" id="box_scan_counter" class="input-field">
+                  </div>
+                  <div class="form-group">
+                      <label for="mo">MO</label>
+                      <input type="text" id="mo" class="input-field">
+                  </div>
+                  <div class="form-group">
+                      <label for="operator_id">Packing Operator ID</label>
+                      <input type="text" id="operator_id" class="input-field">
+                  </div>
+                  <div class="form-group">
+                      <label for="packing_shift">Packing Shift</label>
+                      <input type="text" id="packing_shift" class="input-field">
+                  </div>
+              </div>
+          </div>
+
+          <button class="submit-btn" id="submit-button">Submit</button>
+      </div>
+  </div>
+</div>
+
+
+    <script>
+        function toggleMenu() {
+            const menu = document.querySelector('.navbar .menu');
+            menu.classList.toggle('show');
+        }
+    </script>
+
+      <script>
+        // Navbar Toggle for Responsive Menu
+        function toggleMenu() {
+            const menu = document.querySelector('.navbar .menu');
+            menu.classList.toggle('show');
+        }
+    
+        // QR Code Input Handling
+        const qrInput = document.getElementById("scan_qr_input");
+        const detailsSection = document.getElementById("details-section");
+ 
+        qrInput.addEventListener("input", async () => {
+    try {
+        let qrCodeData = qrInput.value.trim();
+        console.log("Raw Input from Scanner:", qrCodeData);
+
+        // Sanitize input and validate JSON
+        try {
+            // Remove newlines or any extra whitespace characters
+            qrCodeData = qrCodeData.replace(/[\r\n]+/g, "").replace(/^\s+|\s+$/g, "");
+            console.log("Sanitized QR Code Data:", qrCodeData);
+
+            // Parse the sanitized string as JSON
+            qrCodeData = JSON.parse(qrCodeData);
+        } catch (err) {
+            console.error("Invalid QR Code JSON:", err);
+            Swal.fire({
+                title: "Invalid QR Code",
+                text: "The scanned QR code data is not valid JSON.",
+                icon: "error",
+                confirmButtonText: "Try Again",
+            });
+            return;
+        }
+
+        console.log("Parsed QR Code Data:", qrCodeData);
+
+        // Send sanitized and parsed JSON to the backend
+        const response = await fetch("https://10.185.166.5:3000/validate-qrcode", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ qrCodeData: JSON.stringify(qrCodeData) }),
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            console.log("Backend Response:", result);
+
+            // Populate form fields with parsed data
+            document.getElementById("part_no").value = qrCodeData.part_no || "";
+            document.getElementById("part_description").value = qrCodeData.part_description || "";
+            document.getElementById("box_no").value = qrCodeData.box_no || "";
+            document.getElementById("date").value = qrCodeData.date || "";
+            document.getElementById("time").value = qrCodeData.time || "";
+            document.getElementById("channel").value = qrCodeData.channel || "";
+            document.getElementById("quantity_per_box").value = qrCodeData.quantity_per_box || "";
+            document.getElementById("box_weight").value = qrCodeData.box_weight || "";
+
+            // Display appropriate message based on backend validation
+            if (result.isReinspection) {
+                  // Add this line to update the box_scan_counter field
+    document.getElementById("box_scan_counter").value = result.reuseCount || 0;
+                Swal.fire({
+                    title: "Reused BOX!",
+                    text: `This BOX number is reused. Reinspection count: ${result.reuseCount}`,
+                    icon: "warning",
+                    confirmButtonText: "OK",
+                }).then(() => detailsSection.style.display = "block");
+            } else if (result.isFresh) {
+                Swal.fire({
+                    title: "Fresh BOX!",
+                    text: "This BOX exists in the weighing station and is marked as fresh.",
+                    icon: "success",
+                    confirmButtonText: "OK",
+                }).then(() => detailsSection.style.display = "block");
+            } else if (result.isNew) {
+                Swal.fire({
+                    title: "New BOX!",
+                    text: "This is a new BOX.",
+                    icon: "info",
+                    confirmButtonText: "OK",
+                }).then(() => detailsSection.style.display = "block");
+            }
+        } else {
+            const errorData = await response.json();
+            console.error("Validation Error from Backend:", errorData);
+            Swal.fire({
+                title: "Error",
+                text: errorData.error || "Invalid QR Code data.",
+                icon: "error",
+                confirmButtonText: "Try Again",
+            });
+        }
+    } catch (error) {
+        console.error("Unhandled Error:", error);
+        Swal.fire({
+            title: "Error",
+            text: "Something went wrong while validating the QR Code.",
+            icon: "error",
+            confirmButtonText: "OK",
+        });
+    }
+});
+
+
+        document.getElementById("submit-button").addEventListener("click", async () => {
+            const data = {
+                part_no: document.getElementById("part_no").value,
+                part_description: document.getElementById("part_description").value,
+                box_no: document.getElementById("box_no").value,
+                date: document.getElementById("date").value,
+                time: document.getElementById("time").value,
+                channel: document.getElementById("channel").value,
+                quantity_per_box: parseInt(document.getElementById("quantity_per_box").value) || 0,
+                box_weight: document.getElementById("box_weight").value,
+                molding_date: document.getElementById("molding_date").value,
+                molding_shift: document.getElementById("molding_shift").value,
+                post_curing_date: document.getElementById("post_curing_date").value,
+                post_curing_shift: document.getElementById("post_curing_shift").value,
+                finishing_date: document.getElementById("finishing_date").value,
+                finishing_shift: document.getElementById("finishing_shift").value,
+                no_of_boxes: parseInt(document.getElementById("no_of_boxes").value) || 0,
+                box_scan_counter: parseInt(document.getElementById("box_scan_counter").value) || 0,
+                mo: document.getElementById("mo").value,
+                operator_id: document.getElementById("operator_id").value,
+                packing_shift: document.getElementById("packing_shift").value,
+            };
+    
+            try {
+                const response = await fetch("https://10.185.166.5:3000/submit", {
+                   
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data),
+                });
+    
+                if (response.ok) {
+                    Swal.fire({
+                        title: "Submitted!",
+                        text: "Form submitted successfully.",
+                        icon: "success",
+                        confirmButtonText: "OK",
+                    });
+                } else {
+                    Swal.fire({
+                        title: "Submission Failed",
+                        text: "Please try again.",
+                        icon: "error",
+                        confirmButtonText: "OK",
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    title: "Error",
+                    text: "Something went wrong. Check console.",
+                    icon: "error",
+                    confirmButtonText: "OK",
+                });
+                console.error(error);
+            }
+        });
+    
+    
+    </script>
+    
+  
+  
+</body>
+</html>

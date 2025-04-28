@@ -1,0 +1,661 @@
+const mssql = require('mssql');
+
+var async = require("async");
+var moment = require('moment');
+var express = require("express"),
+  app = require("express")(),
+  http = require("http").Server(app),
+  io = require("socket.io")(http),
+  util = require("util"),
+  fs = require("fs");
+// app.use(cors());
+const nrc = require('node-run-cmd');
+const { log } = require('console');
+const path = require('path');
+const multer = require('multer');
+
+const cors = require('cors');
+
+// Initialize Express app
+
+const PORT = 3000;
+
+// Middleware setup
+app.use(cors({ // Configure CORS
+  origin: '*', // Allow all origins
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+app.use(express.json()); // To parse JSON data
+app.use(express.urlencoded({ extended: true })); // To parse URL-encoded data
+
+
+// // Serve static files
+app.use(express.static(path.join(__dirname, 'public')));
+// app.use(express.static(path.join(__dirname, 'www')));
+// Middleware for static files
+// Middleware for serving static files
+// app.use(express.static(__dirname));
+
+app.get("/quality", (req, res) => {
+  res.sendFile(path.join(__dirname, "quality.html"));
+});
+app.get("/index", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
+app.get("/quality", (req, res) => {
+  res.sendFile(path.join(__dirname, "quality.html"));
+});
+app.get("/weighing", (req, res) => {
+  res.sendFile(path.join(__dirname, "weighing.html"));
+});
+app.get("/report", (req, res) => {
+  res.sendFile(path.join(__dirname, "report.html"));
+});
+
+
+const dbConfig = {
+     user: "admin9",
+    password: "admin9",
+    database: "skf_digital_traceability",
+    server: 'DESKTOP-5UJJEQ0',
+    pool: {
+      max: 10,
+      min: 0,
+      idleTimeoutMillis: 30000
+    },
+    options: {
+      encrypt: false, // for azure
+      trustServerCertificate: false // change to true for local dev / self-signed certs
+    }
+  };
+
+//   app.get('/logo', (req, res) => {
+//     res.sendFile(path.join(__dirname, 'public/images/logo.png'));
+// });
+
+
+// app.get('/quality', (req, res) => {
+//   res.sendFile(path.join(__dirname, 'www', 'quality.html'));
+// });
+
+app.get('/scan', (req, res) => {
+  const data = decodeURIComponent(req.query.data);
+  try {
+    const jsonData = JSON.parse(data);
+    res.json({ success: true, data: jsonData });
+  } catch (error) {
+    res.status(400).json({ success: false, message: 'Invalid QR code data' });
+  }
+});
+
+// app.get('/weighing', (req, res) => {
+//     res.send('Server is running!');
+// });
+// *******************************************WEIGHNING start******************************************************
+// Function to validate and format dates
+function validateDate(date) {
+  const parsedDate = new Date(date);
+  if (!isNaN(parsedDate)) {
+      return parsedDate.toISOString().split('T')[0]; // Convert to 'YYYY-MM-DD' format
+  }
+  return null; // Invalid date
+}
+
+app.post('/submit', async (req, res) => {
+  console.log('Received data:', req.body);
+
+  const {
+      part_no,
+      part_description,
+      box_no,
+      date,
+      time,
+      channel,
+      quantity_per_box,
+      box_weight,
+      mo,
+      operator_id,
+      packing_shift,
+      molding_date,
+      molding_shift,
+      post_curing_date,
+      post_curing_shift,
+      finishing_date,
+      finishing_shift,
+      no_of_boxes,
+      box_scan_counter
+  } = req.body;
+
+  try {
+      const parsedDate = validateDate(date);
+      console.log('Parsed date:', parsedDate); // Debugging log
+
+      const pool = await mssql.connect(dbConfig);
+
+      const result = await pool.request()
+          .input('part_no', mssql.NVarChar(50), part_no)
+          .input('part_description', mssql.NVarChar(255), part_description)
+          .input('box_no', mssql.NVarChar(50), box_no)
+          .input('date', mssql.Date, parsedDate)
+          .input('time', mssql.NVarChar(20), time)
+          .input('channel', mssql.NVarChar(50), channel)
+          .input('quantity_per_box', mssql.Int, quantity_per_box)
+          .input('box_weight', mssql.NVarChar(50), box_weight)
+          .input('mo', mssql.NVarChar(50), mo)
+          .input('operator_id', mssql.NVarChar(50), operator_id)
+          .input('packing_shift', mssql.NVarChar(50), packing_shift)
+          .input('molding_date', mssql.Date, validateDate(molding_date))
+          .input('molding_shift', mssql.NVarChar(50), molding_shift)
+          .input('post_curing_date', mssql.Date, validateDate(post_curing_date))
+          .input('post_curing_shift', mssql.NVarChar(50), post_curing_shift)
+          .input('finishing_date', mssql.Date, validateDate(finishing_date))
+          .input('finishing_shift', mssql.NVarChar(50), finishing_shift)
+          .input('no_of_boxes', mssql.Int, no_of_boxes)
+          .input('box_scan_counter', mssql.Int, box_scan_counter)
+          .input('status', mssql.NVarChar(50), 'Pending') // Always set status to 'Pending'
+          .query(`
+              INSERT INTO [dbo].[weighing_station] 
+              (part_no, part_description, box_no, date, time, channel, quantity_per_box, box_weight, mo, operator_id, packing_shift, 
+              molding_date, molding_shift, post_curing_date, post_curing_shift, finishing_date, finishing_shift, no_of_boxes, box_scan_counter, status)
+              VALUES 
+              (@part_no, @part_description, @box_no, @date, @time, @channel, @quantity_per_box, @box_weight, @mo, @operator_id, @packing_shift,
+              @molding_date, @molding_shift, @post_curing_date, @post_curing_shift, @finishing_date, @finishing_shift, @no_of_boxes, @box_scan_counter, @status)
+          `);
+
+      console.log('Data inserted successfully:', result);
+      res.status(200).send({ message: 'Data inserted successfully', result });
+  } catch (err) {
+      console.error('Database insertion error:', err);
+      res.status(500).send({ error: 'Failed to insert data into the database' });
+  }
+});
+app.post('/validate-qrcode', async (req, res) => {
+  console.log("Received Data for Validation:", req.body);
+  const { qrCodeData } = req.body;
+
+  try {
+      const qrCode = JSON.parse(qrCodeData); // Parse the QR code JSON data
+      console.log("Parsed QR Code:", qrCode);
+
+      const pool = await mssql.connect(dbConfig);
+
+      // Check existence in the weighing_station table
+      const result1 = await pool.request()
+          .input('part_no', mssql.NVarChar, qrCode.part_no)
+          .query(`SELECT * FROM weighing_station WHERE part_no = @part_no`);
+
+      // Check existence in the reinspection_table
+      const result2 = await pool.request()
+          .input('part_no', mssql.NVarChar, qrCode.part_no)
+          .query(`SELECT * FROM reinspection_table WHERE part_no = @part_no`);
+
+      if (result1.recordset.length > 0 && result2.recordset.length > 0) {
+          // Exists in both tables
+          console.log("Part exists in both tables");
+          return res.json({
+              isReinspection: true,
+              reuseCount: result2.recordset.length,
+              message: "This part exists in both tables and is marked for reinspection."
+          });
+      } else if (result1.recordset.length > 0) {
+          // Exists in weighing_station only
+          console.log("Part exists in weighing_station table only");
+          return res.json({
+              isFresh: true,
+              message: "This part exists in the weighing station and is marked as fresh."
+          });
+      } else {
+          // Part does not exist in any table (new part)
+          console.log("New Part - Not found in any table");
+          return res.json({
+              isNew: true,
+              message: "This is a new part and does not exist in any table."
+          });
+      }
+  } catch (err) {
+      console.error('Error validating QR code:', err);
+      return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+
+
+
+
+// *******************************************WEIGHNING stop*******************************************************
+
+
+// *******************************************QUALITY CHECK START*******************************************************
+
+// // Configure Multer for file uploads
+// const storage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     const uploadsDir = path.join(__dirname, "uploads");
+//     if (!fs.existsSync(uploadsDir)) {
+//       fs.mkdirSync(uploadsDir);
+//     }
+//     cb(null, uploadsDir);
+//   },
+//   filename: (req, file, cb) => {
+//     const uniqueName = `${Date.now()}.png`;
+//     cb(null, uniqueName);
+//   },
+// });
+
+
+
+  
+//   const upload = multer({ storage });
+  
+//   app.use(express.json()); // To parse JSON request bodies
+  
+//   // Fetch data for Quality Check
+//   app.get("/api/qc/data", async (req, res) => {
+//     try {
+//         const pool = await mssql.connect(dbConfig);
+
+   
+//     //     const query = `
+//     //     SELECT [id], [part_no], [mo], [box_no], [box_scan_counter]
+//     //     FROM [dbo].[weighing_station]
+//     //     WHERE [status] = 'Pending';
+//     // `;
+//     const query = `
+//   SELECT 
+//     id, 
+//     part_no, 
+//     mo, 
+//     box_no, 
+//     status, 
+//     image_path, 
+//     created_at, 
+//     updated_at, 
+//     remark, 
+//     DATEDIFF(MINUTE, created_at, GETDATE()) AS elapsed_time
+//   FROM [skf_digital_traceability].[dbo].[qc_station]
+//   WHERE status = 'Pending';
+// `;
+
+//         console.log("Executing Query:", query);
+
+//         const result = await pool.request().query(query);
+//         console.log("Fetched Data:", result.recordset);
+
+//         if (result.recordset.length === 0) {
+//             console.log("No data found in the weighing_station table.");
+//             return res.status(404).send("No data found.");
+//         }
+
+//         res.status(200).json(result.recordset);
+//     } catch (err) {
+//         console.error("Error fetching data:", err.message);
+//         res.status(500).send("Error fetching data.");
+//     }
+// });
+
+
+// app.post("/api/qc/update", upload.single("image"), async (req, res) => {
+//   const { part_no, mo, box_no, status, remark } = req.body;
+//   const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
+
+//   if (!part_no || !mo || !status || !imagePath || !remark) {
+//     return res.status(400).json({ error: "Missing required fields: part_no, mo, status, image, or remark." });
+//   }
+
+//   try {
+//     const pool = await mssql.connect(dbConfig);
+
+//     const insertQuery = `
+//       INSERT INTO [dbo].[qc_station]
+//       (part_no, mo, box_no, status, image_path, remark, created_at, updated_at)
+//       VALUES
+//       (@part_no, @mo, @box_no, @status, @image_path, @remark, @created_at, @updated_at);
+//     `;
+
+//     const updateQuery = `
+//       UPDATE [dbo].[weighing_station]
+//       SET status = @status
+//       WHERE part_no = @part_no AND mo = @mo AND box_no = @box_no;
+//     `;
+
+//     // Insert into qc_station
+//     await pool
+//       .request()
+//       .input("part_no", mssql.NVarChar, part_no)
+//       .input("mo", mssql.NVarChar, mo)
+//       .input("box_no", mssql.NVarChar, box_no) // Added
+//       .input("status", mssql.NVarChar, status)
+//       .input("image_path", mssql.NVarChar, imagePath)
+//       .input("remark", mssql.NVarChar, remark) // Added
+//       .input("created_at", mssql.DateTime, new Date())
+//       .input("updated_at", mssql.DateTime, new Date())
+//       .query(insertQuery);
+
+//     // Update status in weighing_station
+//     await pool
+//       .request()
+//       .input("status", mssql.NVarChar, status)
+//       .input("part_no", mssql.NVarChar, part_no)
+//       .input("mo", mssql.NVarChar, mo)
+//       .input("box_no", mssql.NVarChar, box_no) // Added box_no input
+//       .query(updateQuery);
+
+//     res.status(201).json({ message: "Quality check updated successfully." });
+//   } catch (err) {
+//     console.error("Error updating quality check:", err.message);
+//     res.status(500).json({ error: "Failed to update quality check." });
+//   }
+// });
+
+
+//   // Endpoint to handle image upload
+//   app.post("/upload", upload.single("image"), (req, res) => {
+//     if (!req.file) {
+//       return res.status(400).send("No file uploaded.");
+//     }
+  
+//     res.status(200).send({
+//       message: "Image uploaded successfully!",
+//       filePath: `/uploads/${req.file.filename}`,
+//     });
+//   });
+  
+  
+
+// Configure Multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadsDir = path.join(__dirname, "uploads");
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir);
+    }
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = `${Date.now()}.png`;
+    cb(null, uniqueName);
+  },
+});
+
+const upload = multer({ storage });
+
+app.use(express.json()); // Parse JSON
+app.use(express.urlencoded({ extended: true })); // Parse URL-encoded data
+
+// Fetch QC data
+// Fetch QC data
+app.get("/api/qc/data", async (req, res) => {
+  try {
+    const pool = await mssql.connect(dbConfig);
+
+    const query = `
+      SELECT 
+        ws.id, 
+        ws.part_no, 
+        ws.mo, 
+        ws.box_no, 
+        ws.status, 
+        ws.created_at,
+        CASE 
+          WHEN ws.created_at IS NULL THEN 'N/A'
+          WHEN DATEDIFF(MINUTE, ws.created_at, GETDATE()) >= 60 THEN 
+            FORMAT(FLOOR(DATEDIFF(MINUTE, ws.created_at, GETDATE()) / 60), '00') + 'hr ' +
+            FORMAT(DATEDIFF(MINUTE, ws.created_at, GETDATE()) % 60, '00') + 'min'
+          ELSE CAST(DATEDIFF(MINUTE, ws.created_at, GETDATE()) AS VARCHAR) + 'min'
+        END AS elapsed_time
+      FROM [dbo].[weighing_station] ws
+      WHERE ws.status = 'Pending';
+    `;
+
+    const result = await pool.request().query(query);
+
+    if (!result.recordset.length) {
+      return res.status(404).json({ message: "No data found" });
+    }
+
+    res.status(200).json(result.recordset);
+  } catch (err) {
+    console.error("Error fetching QC data:", err.message);
+    res.status(500).json({ error: "Error fetching data." });
+  }
+});
+
+
+
+
+// function formatElapsedTimeForDB(minutes) {
+//   const hours = Math.floor(minutes / 60);
+//   const remainingMinutes = minutes % 60;
+//   return `${hours > 0 ? `${hours}hr ` : ""}${remainingMinutes}min`;
+// }
+
+
+// Update QC data
+app.post("/api/qc/update", upload.single("image"), async (req, res) => {
+  const { part_no, mo, box_no, status, remark } = req.body;
+  const imagePath = req.file ? `/uploads/${req.file.filename}` : null;
+
+  if (!part_no || !mo || !box_no || !status || !remark || !imagePath) {
+    return res.status(400).json({ error: "Missing required fields." });
+  }
+
+  try {
+    const pool = await mssql.connect(dbConfig);
+
+    // Fetch `created_at` for elapsed time calculation
+    const queryToFetchCreatedAt = `
+      SELECT created_at 
+      FROM [dbo].[weighing_station]
+      WHERE part_no = @part_no AND mo = @mo AND box_no = @box_no;
+    `;
+    const createdAtResult = await pool
+      .request()
+      .input("part_no", mssql.NVarChar, part_no)
+      .input("mo", mssql.NVarChar, mo)
+      .input("box_no", mssql.NVarChar, box_no)
+      .query(queryToFetchCreatedAt);
+
+    const createdAt = createdAtResult.recordset[0]?.created_at;
+    if (!createdAt) {
+      return res.status(404).json({ error: "Record not found." });
+    }
+
+    const elapsedMinutes = Math.round(
+      (new Date() - new Date(createdAt)) / 60000
+    );
+    const hours = Math.floor(elapsedMinutes / 60);
+    const minutes = elapsedMinutes % 60;
+    const timeElapsedFormatted = `${hours > 0 ? `${hours}hr ` : ""}${minutes}min`;
+
+    // Insert into QC station
+    const insertQuery = `
+      INSERT INTO [dbo].[qc_station] 
+      (part_no, mo, box_no, status, image_path, remark, updated_at, time_elapse)
+      VALUES 
+      (@part_no, @mo, @box_no, @status, @image_path, @remark, GETDATE(), @time_elapse);
+    `;
+    await pool
+      .request()
+      .input("part_no", mssql.NVarChar, part_no)
+      .input("mo", mssql.NVarChar, mo)
+      .input("box_no", mssql.NVarChar, box_no)
+      .input("status", mssql.NVarChar, status)
+      .input("image_path", mssql.NVarChar, imagePath)
+      .input("remark", mssql.NVarChar, remark)
+      .input("time_elapse", mssql.NVarChar, timeElapsedFormatted)
+      .query(insertQuery);
+
+    // Update weighing_station status
+    const updateQuery = `
+      UPDATE [dbo].[weighing_station]
+      SET status = @status
+      WHERE part_no = @part_no AND mo = @mo AND box_no = @box_no;
+    `;
+    await pool
+      .request()
+      .input("status", mssql.NVarChar, status)
+      .input("part_no", mssql.NVarChar, part_no)
+      .input("mo", mssql.NVarChar, mo)
+      .input("box_no", mssql.NVarChar, box_no)
+      .query(updateQuery);
+
+    res.status(201).json({ message: "Quality check updated successfully." });
+  } catch (err) {
+    console.error("Error updating QC data:", err.message);
+    res.status(500).json({ error: "Failed to update quality check." });
+  }
+});
+
+
+
+
+
+
+
+// Endpoint to handle image upload
+app.post("/upload", upload.single("image"), (req, res) => {
+  if (!req.file) {
+    return res.status(400).send("No file uploaded.");
+  }
+
+  res.status(200).send({
+    message: "Image uploaded successfully!",
+    filePath: `/uploads/${req.file.filename}`,
+  });
+});
+
+
+// *******************************************QUALITY CHECK stop*******************************************************
+
+// ******************************************************reinspection start*******************************
+// Reinspection API
+app.get("/api/get-reinspection-data", async (req, res) => {
+  try {
+    const pool = await mssql.connect(dbConfig);
+    const result = await pool.request().query(`
+      SELECT qc.part_no, qc.mo, qc.box_no
+      FROM [skf_digital_traceability].[dbo].[qc_station] qc
+      WHERE qc.status = 'Not Ok'
+      AND NOT EXISTS (
+        SELECT 1
+        FROM reinspection_table rt
+        WHERE rt.part_no = qc.part_no AND rt.mo = qc.mo AND rt.box_no = qc.box_no
+      );
+    `);
+    res.json(result.recordset);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error fetching data.");
+  }
+});
+
+
+
+
+app.post("/api/submit-reinspection", async (req, res) => {
+  const { part_no, mo, box_no, checked_by } = req.body;
+  try {
+    const pool = await mssql.connect(dbConfig);
+    await pool
+      .request()
+      .input("part_no", mssql.NVarChar, part_no)
+      .input("mo", mssql.NVarChar, mo)
+      .input("box_no", mssql.NVarChar, box_no)
+      .input("checked_by", mssql.NVarChar, checked_by)
+      .query(`
+        INSERT INTO reinspection_table (part_no, mo, box_no, checked_by, submitted_at)
+        VALUES (@part_no, @mo, @box_no, @checked_by, GETDATE());
+      `);
+    res.send("Data submitted successfully.");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error submitting data.");
+  }
+});
+
+
+
+  
+// ************************************************reinspection stop*****************************************
+// ****************************************************REPORT START ***********************************
+app.get("/api/fetch-data", async (req, res) => {
+  const { tableId, startDate, endDate } = req.query;
+
+  // Default to today's date if not provided
+  const today = new Date().toISOString().split("T")[0];
+  const start = startDate || today;
+  const end = endDate || today;
+
+  let query = "";
+
+  switch (tableId) {
+    case "weighing":
+      query = `
+       SELECT 
+  [id], [part_no], [part_description], [box_no], [date], [time],
+  [channel], [quantity_per_box], [box_weight], [mo], [operator_id],
+  [packing_shift], [created_at], [molding_date], [molding_shift],
+  [post_curing_date], [post_curing_shift], [finishing_date], [finishing_shift],
+  [no_of_boxes], [box_scan_counter], [status]
+FROM [dbo].[weighing_station]
+WHERE CAST([created_at] AS DATE) BETWEEN '${start}' AND '${end}';
+
+      `;
+      break;
+      case "qc":
+        query = `
+          SELECT 
+            [id], 
+            [part_no], 
+            [mo], 
+            [box_no], 
+            [status], 
+            [image_path], 
+            [remark], 
+            [updated_at]
+          FROM [dbo].[qc_station]
+          WHERE CAST([updated_at] AS DATE) BETWEEN '${start}' AND '${end}';
+        `;
+        break;
+      
+      
+  
+
+    case "reinspection":
+      query = `
+        SELECT 
+          [id], [part_no], [mo], [checked_by], [submitted_at]
+        FROM [dbo].[reinspection_table]
+        WHERE CAST([submitted_at] AS DATE) BETWEEN '${start}' AND '${end}';
+      `;
+      break;
+
+    default:
+      return res.status(400).json({ error: "Invalid tableId provided" });
+  }
+
+  try {
+    const pool = await mssql.connect(dbConfig);
+    const result = await pool.request().query(query);
+    res.json({ tableId, data: result.recordset });
+  } catch (err) {
+    console.error("SQL error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Serve the frontend files
+// app.use(express.static("www"));
+
+
+
+// ********************************************************REPORT END *************************************
+
+// app.listen(PORT, () => {
+//     console.log(`Server running on http://localhost:${PORT}`);
+// });
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on http://192.168.0.213:${PORT}`);
+});

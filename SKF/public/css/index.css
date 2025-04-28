@@ -1,0 +1,513 @@
+/* General Styles */
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #F9FAFB; /* Light gray background */
+    color: #333333; /* Dark gray text */
+    overflow-x: hidden;
+  }
+  
+  .logo img {
+    height: 50px; /* Adjust the height as needed */
+    width: auto;  /* Maintain aspect ratio */
+    display: inline-block;
+    vertical-align: middle;
+  }
+  
+  /* Navbar */
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #4F46E5; /* Primary Blue */
+    padding: 10px 20px;
+    transition: background-color 0.3s ease;
+    z-index: 1000; /* Ensure navbar stays on top */
+    position: relative;
+  }
+  
+  .navbar a {
+    text-decoration: none;
+    color: #FFFFFF; /* White text */
+    padding: 8px 16px;
+    transition: color 0.3s ease, transform 0.3s ease;
+  }
+  
+  .navbar a:hover {
+    background-color: #34D399; /* Bright Green hover */
+    color: #FFFFFF;
+    border-radius: 4px;
+    transform: scale(1.1); /* Slight zoom effect */
+  }
+  
+  .navbar .menu {
+    display: flex;
+    gap: 15px;
+    transition: all 0.5s ease;
+    z-index: 1001; /* Ensure menu stays above other content */
+  }
+  
+  .navbar-toggle {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+  }
+  
+  .navbar-toggle span {
+    background-color: white;
+    height: 3px;
+    width: 25px;
+    margin: 3px 0;
+    transition: transform 0.3s ease;
+  }
+  
+  /* Content Section */
+  .content {
+    text-align: center;
+    margin: 20px;
+    opacity: 0; /* Fade-in effect */
+    animation: fadeIn 1.5s forwards;
+  }
+  
+  .table-container {
+    margin: 20px;
+    padding: 20px;
+    background-color: #FFFFFF; /* White background */
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    overflow-x: auto;
+    opacity: 0; /* Fade-in effect */
+    animation: fadeInUp 1.5s forwards;
+    animation-delay: 0.5s;
+    position: relative;
+    z-index: 1; /* Ensure table stays below navbar */
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+  }
+  
+  table th,
+  table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #E5E7EB; /* Light gray border */
+    transition: background-color 0.3s ease;
+  }
+  
+  table th {
+    background-color: #4F46E5; /* Primary Blue for header */
+    color: #FFFFFF; /* White text */
+  }
+  
+  table tr:hover td {
+    background-color: #F3F4F6; /* Light background on hover */
+  }
+  
+  button {
+    background-color: #34D399; /* Bright Green button */
+    color: #FFFFFF; /* White text */
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  button:hover {
+    background-color: #FB923C; /* Soft Orange hover */
+    transform: scale(1.1); /* Slight zoom effect */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Shadow on hover */
+  }
+  
+  /* Links */
+  a {
+    color: #FB923C; /* Soft Orange */
+    text-decoration: none;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+  }
+  
+  a:hover {
+    color: #34D399; /* Bright Green */
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Glow effect */
+  }
+  
+  /* Animations */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Responsive Styles */
+  @media (max-width: 768px) {
+    .navbar .menu {
+      display: none;
+      flex-direction: column;
+      background-color: #4F46E5; /* Primary Blue */
+      position: absolute;
+      top: 100%; /* Position it below the navbar */
+      left: 0;
+      width: 100%;
+      padding: 10px 0;
+      z-index: 1001; /* Keep it above the table */
+    }
+  
+    .navbar .menu.show {
+      display: flex;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+  
+    .navbar-toggle {
+      display: flex;
+    }
+  
+    table {
+      font-size: 12px; /* Reduce font size for mobile */
+    }
+  
+    table th,
+    table td {
+      padding: 8px; /* Adjust padding for smaller screens */
+    }
+  }
+  
+  /* Modal Styling */
+.modal {
+  display: none;
+  position: fixed;
+  top: 10%; /* Adjusted to prevent clipping at the top */
+  left: 50%;
+  transform: translate(-50%, 0); /* Center horizontally */
+  background-color: white;
+  padding: 20px;
+  max-width: 90%; /* Responsive width */
+  width: 400px; /* Default width */
+  max-height: 75vh; /* Limit modal height to viewport height */
+  overflow-y: auto; /* Enable vertical scrolling when content exceeds */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  z-index: 1000; /* Ensure modal appears above other elements */
+}
+
+.modal.open {
+  display: block; /* Show modal when .open class is added */
+}
+
+/* Optional: Custom scrollbar styling for better UX */
+.modal::-webkit-scrollbar {
+  width: 8px;
+}
+
+.modal::-webkit-scrollbar-thumb {
+  background: #4F46E5; /* Scrollbar thumb color */
+  border-radius: 10px;
+}
+
+.modal::-webkit-scrollbar-track {
+  background: #F9FAFB; /* Scrollbar track color */
+}
+
+      .overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+      }
+  
+      .overlay.open {
+        display: block;
+      }
+  
+      /* Camera Section */
+      .camera-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+  
+      .camera-container video {
+        width: 100%;
+        max-height: 200px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+      }
+  
+      .camera-preview img {
+        max-width: 100%;
+        max-height: 150px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+      }
+      .status-button {
+        padding: 5px 10px;
+        background-color: #0055A5;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+  
+      .status-button:hover {
+        background-color: #003a70;
+      }
+  
+      .status-button:active {
+        background-color: #002a50;
+      }
+      /* Prevent dropdown from overflowing */
+  .camera-container {
+    position: relative; /* Ensure positioning context for dropdown */
+  }
+  
+  select {
+    position: relative;
+    z-index: 1;
+  }
+  /* ******************************************************************************************* */
+  /* Content Section */
+  .content {
+    padding: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  
+  /* Form Section */
+  .form-section {
+    margin-bottom: 1.5rem;
+    padding: 20px;
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: left;
+    overflow: hidden; /* Prevent overflow */
+  }
+  
+  /* Section Headers */
+  .form-section h2 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+    color: #4a4a4a;
+  }
+  
+  /* Form Grid */
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Two columns */
+    gap: 15px; /* Consistent spacing between items */
+    width: 100%; /* Ensure it stays within the container */
+    box-sizing: border-box; /* Includes padding in width calculations */
+  }
+  
+  /* Input Fields */
+  .input-field {
+    width: 100%;
+    padding: 10px;
+    font-size: 0.95rem;
+    border: 1.5px solid #d1d5db;
+    border-radius: 8px;
+    background-color: #f9fafb;
+    color: #1f2937;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s, box-shadow 0.3s;
+    box-sizing: border-box; /* Prevents overflow */
+  }
+  
+  .input-field:focus {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 6px rgba(79, 70, 229, 0.3);
+  }
+  
+  .input-field[readonly] {
+    background-color: #f3f4f6;
+    color: #6b7280;
+    cursor: not-allowed;
+  }
+  
+  /* Submit Button */
+  .submit-btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(to right, #4f46e5, #6d28d9);
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+  }
+  
+  .submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(79, 70, 229, 0.3);
+  }
+  
+  /* Responsive Design */
+  
+  /* Tablet Devices */
+  @media (max-width: 768px) {
+    .form-grid {
+      grid-template-columns: 1fr; /* Single column for smaller screens */
+    }
+  
+    .input-field {
+      padding: 8px;
+      font-size: 0.9rem;
+    }
+  
+    .submit-btn {
+      font-size: 1rem;
+      padding: 12px;
+    }
+  }
+  
+  /* Mobile Devices */
+  @media (max-width: 480px) {
+    .form-section {
+      padding: 15px;
+    }
+  
+    .form-section h2 {
+      font-size: 1.2rem;
+    }
+  
+    .input-field {
+      padding: 8px;
+      font-size: 0.9rem;
+    }
+  
+    .submit-btn {
+      font-size: 0.9rem;
+      padding: 10px;
+    }
+  }
+ /* *************************************** Responsive Back Button*************************************************** */
+.back-button {
+  display: flex; /* Makes the icon and text align properly */
+  align-items: center; /* Centers icon and text vertically */
+  text-decoration: none;
+  color: #FFFFFF; /* White text */
+  background-color: transparent; /* No background by default */
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 1rem; /* Adjust size for desktop */
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.back-button:hover {
+  background-color: #34D399; /* Bright green background on hover */
+  transform: scale(1.1); /* Slight zoom effect */
+}
+
+.back-button i {
+  margin-right: 8px; /* Space between the icon and the text */
+  font-size: 1.2rem; /* Adjust icon size */
+}
+
+/* Responsive adjustments for Back Button */
+@media (max-width: 768px) {
+  .back-button {
+    font-size: 0.9rem; /* Smaller text size for tablets */
+    padding: 6px 12px;
+  }
+
+  .back-button i {
+    font-size: 1rem; /* Smaller icon size for tablets */
+    margin-right: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .back-button {
+    font-size: 0.8rem; /* Even smaller text for mobile */
+    padding: 4px 10px;
+  }
+
+  .back-button i {
+    font-size: 0.9rem; /* Icon size for mobile */
+    margin-right: 4px;
+  }
+}
+/* *************************************** Responsive Refresh Button *************************************************** */
+/* General styling for the refresh button */
+.refresh-button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* Align with other menu items */
+  text-decoration: none;
+  color: #FFFFFF;
+  background-color: transparent;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  margin-left: 0; /* Reset any margins */
+}
+
+/* Hover effect for the refresh button */
+.refresh-button:hover {
+  background-color: #60A5FA; /* Light blue background on hover */
+  transform: rotate(360deg); /* Spin effect */
+}
+
+/* Responsive adjustments for the refresh button */
+@media (max-width: 768px) {
+  .menu {
+    display: flex;
+    flex-direction: column; /* Stack menu items */
+    align-items: flex-start; /* Align all items to the left */
+  }
+
+  .refresh-button {
+    order: 1; /* Place it at the top or desired position */
+    margin: 0; /* Ensure no extra margins */
+    width: 100%; /* Match width with other menu items */
+    padding: 10px 16px; /* Consistent padding with menu items */
+  }
+}
+
+@media (max-width: 480px) {
+  .menu {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .refresh-button {
+    order: 1; /* Keep it positioned with the menu */
+    margin: 0;
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 0.9rem; /* Adjust size for smaller screens */
+  }
+}
+
+/* ************************************************************************************* */
+
+  

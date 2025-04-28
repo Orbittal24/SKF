@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Navbar and Table</title>
+    <link rel="stylesheet" href="/css/index.css">
+    
+</head>
+<body>
+    <!-- Navbar -->
+    <div class="navbar">
+        <div class="logo">
+            <img src="/images/png-transparent-skf-hd-logo1.png" alt="SKF Logo">
+          </div>
+          <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+        <div class="menu">
+
+         
+          <a href="#" class="back-button" onclick="history.back()">
+            <i class="fas fa-arrow-left"></i> Back
+          </a>
+          <a href="#" class="refresh-button" onclick="location.reload()">
+            <i class="fas fa-sync-alt"></i>
+        </a>
+            <a href="weighing.html">Weighing</a>
+            <a href="reinspection.html">Reinspection</a>
+            <a href="report.html">Reports</a>
+            <a href="login.html">Logout</a>
+            
+        </div>
+        <div class="navbar-toggle" onclick="toggleMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+
+    <!-- Content Section -->
+    <div class="content">
+        <h1>Reinspection</h1>
+       
+
+        <!-- Table Section -->
+        <div class="table-container">
+     
+            <table id="reinspectionTable">
+                <thead>
+                  <tr>
+                    <th>Part Number</th>
+                    <th>MO Number</th>
+                    <th>Box Number</th>
+                    <th>Checked By</th>
+                    <th>Submit</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- Rows will be dynamically inserted here -->
+                </tbody>
+              </table>
+              
+        </div>
+    </div>
+
+    <script>
+        function toggleMenu() {
+            const menu = document.querySelector('.navbar .menu');
+            menu.classList.toggle('show');
+        }
+    </script>
+    
+  <script>
+    async function fetchData() {
+      try {
+        const response = await fetch('/api/get-reinspection-data');
+        const data = await response.json();
+
+        const tableBody = document.querySelector("#reinspectionTable tbody");
+        tableBody.innerHTML = ""; // Clear existing rows
+       
+       
+ data.forEach(row => {
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td>${row.part_no}</td>
+    <td>${row.mo}</td>
+    <td>${row.box_no}</td>
+    <td><input type="text" class="checkedBy" placeholder="Enter name"></td>
+    <td><button class="btn" disabled>Submit</button></td>
+  `;
+  tableBody.appendChild(tr);
+});
+
+
+        // Enable/disable submit button
+        tableBody.addEventListener("input", (e) => {
+          if (e.target.classList.contains("checkedBy")) {
+            const submitButton = e.target.closest("tr").querySelector(".btn");
+            submitButton.disabled = !e.target.value.trim();
+          }
+        });
+
+        // Handle submit button click
+        tableBody.addEventListener("click", async (e) => {
+  if (e.target.classList.contains("btn") && !e.target.disabled) {
+    const row = e.target.closest("tr");
+    const partNo = row.children[0].textContent;
+    const moNo = row.children[1].textContent;
+    const boxNo = row.children[2].textContent;
+    const checkedBy = row.querySelector(".checkedBy").value.trim();
+
+    if (!moNo || !boxNo || !checkedBy) {
+      alert('MO Number, Box Number, or Checked By field is missing.');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/submit-reinspection', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ part_no: partNo, mo: moNo, box_no: boxNo, checked_by: checkedBy }),
+      });
+
+      if (response.ok) {
+        alert(`Submitted: ${partNo}, ${moNo}, ${boxNo}, Checked By: ${checkedBy}`);
+        row.remove();
+      } else {
+        alert('Submission failed.');
+      }
+    } catch (err) {
+      console.error('Error during submission:', err);
+    }
+  }
+});
+
+      } catch (err) {
+        console.error('Error fetching data:', err);
+      }
+    }
+
+    fetchData();
+  </script>
+</body>
+</html>
